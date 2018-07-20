@@ -40,4 +40,22 @@
 int getPassword ( char * const password, const unsigned int size, 
 	const char byte );
 
+////////////////////////////////////////////////////////////////////////////////
+/// \fn int setBlockMode ( void ** const outPtr, bool hide );
+/// \param [ in ] outPtr : return mask flag need to resetBlockMode
+/// \param [ in ] hide : hide text typed
+/// \brief set terminal to block mode, on keyhit getchar return element, no 
+///     need to wait to press enter.
+/// \return if 0 the OK else see errno for more details
+////////////////////////////////////////////////////////////////////////////////
+int setBlockMode ( void ** const outPtr, bool hide );
+
+////////////////////////////////////////////////////////////////////////////////
+/// \fn int resetBlockMode ( const void * const ptr );
+/// \param [ in ] ptr : ptr on mask provided by setBlockMode
+/// \brief reset terminal block mode
+/// \return if 0 the OK else see errno for more details
+////////////////////////////////////////////////////////////////////////////////
+int resetBlockMode ( const void * const ptr );
+
 #endif

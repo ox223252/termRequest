@@ -16,10 +16,11 @@
 ///     this program. If not, see <http://www.gnu.org/licenses/>
 ////////////////////////////////////////////////////////////////////////////////
 
+#include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
-#include <errno.h>
 
 int getPassword ( char * const password, const unsigned int size, const char byte )
 {
@@ -81,6 +82,48 @@ int getPassword ( char * const password, const unsigned int size, const char byt
 	return ( 0 );
 }
 
+int setBlockMode ( void ** const outPtr, bool hide )
+{
+	static struct termios oldMask, newMask;
+
+	if ( !outPtr )
+	{
+		errno = EINVAL;
+		return ( __LINE__ );
+	}
+
+	tcgetattr ( STDIN_FILENO, &oldMask );
+
+	newMask = oldMask;
+
+	newMask.c_lflag &= ~(ICANON); // avoid <enter>
+
+	if ( hide )
+	{
+		newMask.c_lflag &= ~(ECHO); // hide text typed
+	}
+
+	tcsetattr( STDIN_FILENO, TCSANOW, &newMask );
+
+	*outPtr = &oldMask;
+
+	return( 0 );
+}
+
+int resetBlockMode ( const void * const ptr )
+{
+
+	if ( !ptr )
+	{
+		errno = EINVAL;
+		return ( __LINE__ );
+	}
+
+	tcsetattr( STDIN_FILENO, TCSANOW, (struct termios * )ptr );
+
+	return( 0 );
+}
+
 #ifdef TEST_PASSWORD
 
 #include <string.h>
@@ -88,6 +131,8 @@ int getPassword ( char * const password, const unsigned int size, const char byt
 int main ( void )
 {
 	char password[ 32 ] = { 0 };
+	void * ptr = NULL;
+	char c;
 
 	printf ( "password : " );
 
@@ -100,6 +145,13 @@ int main ( void )
 	getPassword ( password, 32, 0 );
 
 	printf ( "\ntyped : %s : %ld\n", password, strlen ( password ) );
+
+	setBlockMode ( &ptr, false );
+	while ( ( c = getchar ( ) ) != '\n' )
+	{
+		printf ( "-%c |", c );
+	}
+	resetBlockMode ( ptr );
 
 	return  ( 0 );
 }
