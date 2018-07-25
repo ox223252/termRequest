@@ -58,4 +58,27 @@ int setBlockMode ( void ** const outPtr, bool hide );
 ////////////////////////////////////////////////////////////////////////////////
 int resetBlockMode ( const void * const ptr );
 
+////////////////////////////////////////////////////////////////////////////////
+/// \fn void setPosition ( int x, int y );
+/// \brief set cursor to position x, y
+////////////////////////////////////////////////////////////////////////////////
+void setPosition ( int x, int y );
+
+////////////////////////////////////////////////////////////////////////////////
+/// \fn int menu ( int argc, ... );
+/// \param [ in ] argc : number of menu element
+/// \param [ in ] variadic :
+///     char* menu elements
+///     char* menu elements
+///     char* ...
+///     char* on selector string ( length < 32 )
+///     char* on unselector string ( length < 32 )
+///     int x position (verticale)
+///     int y position (horizonale)
+///     NULL
+/// \brief reset terminal block mode
+/// \return -1 in error case, else return element choice selected
+////////////////////////////////////////////////////////////////////////////////
+int menu ( int argc, ... );
+
 #endif
