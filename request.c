@@ -280,50 +280,50 @@ int main ( void )
 	void * ptr = NULL;
 	char c;
 
-	// printf ( "password : " );
+	printf ( "password : " );
 
-	// getPassword ( password, 32, '*' );
+	getPassword ( password, 32, '*' );
 
-	// printf ( "\ntyped : %s : %ld\n", password, strlen ( password ) );
+	printf ( "\ntyped : %s : %ld\n", password, strlen ( password ) );
 
-	// printf ( "password : " );
+	printf ( "password : " );
 
-	// getPassword ( password, 32, 0 );
+	getPassword ( password, 32, 0 );
 
-	// printf ( "\ntyped : %s : %ld\n", password, strlen ( password ) );
+	printf ( "\ntyped : %s : %ld\n", password, strlen ( password ) );
 
 
-	// printf ( "demo for input without enter\n" );
-	// setBlockMode ( &ptr, false );
-	// while ( ( c = getchar ( ) ) != '\n' )
-	// {
-	// 	printf ( "-%c |", c );
-	// }
-	// resetBlockMode ( ptr );
+	printf ( "demo for input without enter\n" );
+	setBlockMode ( &ptr, false );
+	while ( ( c = getchar ( ) ) != '\n' )
+	{
+		printf ( "-%c |", c );
+	}
+	resetBlockMode ( ptr );
 
-	// printf ( "press enter to continue\n" );
-	// getchar ( );
+	printf ( "press enter to continue\n" );
+	getchar ( );
 	
-	// printf ( "demo for menu\n" );
-	// // default  menu
+	printf ( "demo for menu\n" );
+	// default  menu
 	menu ( 3, "A--", "B--", "C--", NULL );
 
 	// default  menu by table
 	menu ( 0, menuTable, NULL );
 
-	// // color on selector and ustom selector
-	// menu ( 3, "A--", "B--", "C--", "\e[1;36m*\e[0m", NULL );
-	// system ( "clear" );
+	// color on selector and ustom selector
+	menu ( 3, "A--", "B--", "C--", "\e[1;36m*\e[0m", NULL );
+	system ( "clear" );
 
-	// // selector and color for not select items, displayed on position X/Y
-	// printf ( " choice%d\n", menu ( 3, "A--", "B--", "C--", ">", " \e[31m", 3, 6, NULL ) );
-	// system ( "clear" );
+	// selector and color for not select items, displayed on position X/Y
+	printf ( " choice%d\n", menu ( 3, "A--", "B--", "C--", ">", " \e[31m", 3, 6, NULL ) );
+	system ( "clear" );
 
-	// // two colors no selector
-	// menu ( 3, "A--", "B--", "C--", " \e[1;32m", " \e[31m", 3, 6, NULL );
+	// two colors no selector
+	menu ( 3, "A--", "B--", "C--", " \e[1;32m", " \e[31m", 3, 6, NULL );
 
-	// // larger selector
-	// menu ( 3, "A--", "B--", "C--", "--", " " );
+	// larger selector
+	menu ( 3, "A--", "B--", "C--", "--", " " );
 
 	return  ( 0 );
 }

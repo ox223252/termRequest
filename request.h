@@ -68,15 +68,22 @@ void setPosition ( int x, int y );
 /// \fn int menu ( int argc, ... );
 /// \param [ in ] argc : number of menu element
 /// \param [ in ] variadic :
-///     char* menu elements
-///     char* menu elements
-///     char* ...
+///     if argc > 0
+///         char* menu elements
+///         char* menu elements
+///         char* ...
+///     else
+///         char *tab[];
 ///     char* on selector string ( length < 32 )
 ///     char* on unselector string ( length < 32 )
 ///     int x position (verticale)
 ///     int y position (horizonale)
 ///     NULL
-/// \brief reset terminal block mode
+/// \brief set a menu
+/// \details if argc is upper than 0, then you should pass a list of elements,
+///     if argc is less or equal to 0 then you should pass as first variadic
+///     element a table of string terminated by NULL. The variadic list should
+///     be endded by NULL.
 /// \return -1 in error case, else return element choice selected
 ////////////////////////////////////////////////////////////////////////////////
 int menu ( int argc, ... );
