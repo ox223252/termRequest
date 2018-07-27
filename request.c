@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <sys/ioctl.h>
 
 static int _termRequest_positionX = 0;
 
@@ -130,7 +131,17 @@ int resetBlockMode ( const void * const ptr )
 
 void setPosition ( int x, int y )
 {
-	printf ( "\e[%d;%dH", x, y );
+	struct winsize w;
+
+	if ( ( x < 0 ) ||
+		( y < 0 ) )
+	{
+		ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+	}
+
+	printf ( "\e[%d;%dH", 
+		( ( x > 0 )? x : w.ws_row + x ), 
+		( ( y > 0 )? y : w.ws_col + y ) );
 }
 
 int menu ( int argc, ... )
