@@ -17,21 +17,41 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <errno.h>
-#include <stdbool.h>
 #include <stdio.h>
+
+#ifdef __linux__
 #include <termios.h>
+#include <sys/ioctl.h>
+#else
+#include <conio.h>
+#endif
+
 #include <unistd.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <sys/ioctl.h>
 
-static int _termRequest_positionX = 0;
+#ifdef __linux__
+#define COLOR_NONE "\e[0m"
+#else
+#define COLOR_NONE 
+#endif
+
+#include "request.h"
+
+#ifdef __linux__
+const char _request_enter = '\n';
+const char _request_backSpace = 0x7f;
+#else
+const char _request_enter = '\r';
+const char _request_backSpace = 0x08;
+#endif
 
 int getPassword ( char * const password, const unsigned int size, const char byte )
 {
+	#ifdef __linux__
 	static struct termios oldMask, newMask;
+	#endif
 	unsigned int i  = 0;
-
 
 	if ( !password ||
 		!size )
@@ -40,6 +60,7 @@ int getPassword ( char * const password, const unsigned int size, const char byt
 		return( __LINE__ );
 	}
 	
+	#ifdef __linux__
 	tcgetattr ( STDIN_FILENO, &oldMask );
 
 	newMask = oldMask;
@@ -48,17 +69,26 @@ int getPassword ( char * const password, const unsigned int size, const char byt
 	newMask.c_lflag &= ~(ECHO); // hide text typed
 
 	tcsetattr( STDIN_FILENO, TCSANOW, &newMask );
+	#endif
 
 	while ( i < ( size - 1 ) )
 	{
+		#ifdef __linux__
 		password[ i ] = getchar ( );
+		#else
+		password[ i ] = _getch ( );
+		#endif
 
-		if ( password[ i ] == '\n' )
+		if ( password[ i ] == _request_enter )
 		{
+			#ifndef __linux__
+			printf ( "\n" );
+			#endif
+
 			password[ i ] = '\0';
 			break;
 		}
-		else if (  password[ i ] == 0x7f )
+		else if ( password[ i ] == _request_backSpace )
 		{ // manage backspace
 			if ( byte )
 			{
@@ -82,11 +112,14 @@ int getPassword ( char * const password, const unsigned int size, const char byt
 		}
 	}
 
+	#ifdef __linux__
 	tcsetattr( STDIN_FILENO, TCSANOW, &oldMask);
+	#endif
 
 	return ( 0 );
 }
 
+#ifdef __linux__
 int setBlockMode ( void ** const outPtr, bool hide )
 {
 	static struct termios oldMask, newMask;
@@ -143,10 +176,28 @@ void setPosition ( int x, int y )
 		( ( x > 0 )? x : w.ws_row + x ), 
 		( ( y > 0 )? y : w.ws_col + y ) );
 }
+#else
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+int setBlockMode ( void ** const outPtr, bool hide )
+{ // not avaliable for windows
+	return ( __LINE__ );
+}
+int resetBlockMode ( const void * const ptr )
+{ // not avaliable for windows
+	return ( __LINE__ );
+}
+void setPosition ( int x, int y )
+{ // not avaliable for windows
+}
+#pragma GCC diagnostic pop
+#endif
 
 int menu ( int argc, ... )
 {
+	#ifdef __linux__
 	static struct termios oldMask, newMask;
+	void *mask = NULL;
+	#endif
 	va_list list;
 	char **table  = NULL;
 
@@ -157,7 +208,6 @@ int menu ( int argc, ... )
 	char *ptr = NULL;
 	char letterSelect[32] = ">";
 	char letterNoSelect[32] = " ";
-	void *mask = NULL;
 
 	struct 
 	{
@@ -166,9 +216,9 @@ int menu ( int argc, ... )
 	}
 	position = { 0 };
 
-
+	#ifdef __linux__
 	setBlockMode ( &mask, true );
-
+	#endif
 
 	va_start ( list, argc );
 
@@ -213,57 +263,82 @@ int menu ( int argc, ... )
 	va_end ( list );
 
 	do
-	{
-		if ( argc > 0 )
-		{ // pass list
-			for ( i = 0; i < argc; i++ )
+	{ // display menu
+		i = 0;
+		while ( 1 )
+		{
+			if ( ( argc &&
+				( i >= argc ) ) ||
+				( table[ i ] == NULL ) )
 			{
-				if ( position.x && position.y )
-				{ // only if postion is set
-					setPosition ( position.x + i, position.y );
-				}
-
-				printf ( " %s %s \e[0m\n", ( selecteur == i )? letterSelect : letterNoSelect, table[ i ] );
+				nbEelemtns = i;
+				break;
 			}
-			nbEelemtns = argc;
-		}
-		else
-		{ // if pass an array
-			for ( i = 0; table[ i ]; i++ )
-			{
-				if ( position.x && position.y )
-				{ // only if postion is set
-					setPosition ( position.x + i, position.y );
-				}
 
-				printf ( " %s %s \e[0m\n", ( selecteur == i )? letterSelect : letterNoSelect, table[ i ] );
+			#ifdef __linux__
+			if ( position.x && position.y )
+			{ // only if postion is set
+				setPosition ( position.x + i, position.y );
 			}
-			nbEelemtns = i;
+			#endif
+
+			printf ( " %s %s "COLOR_NONE"\n", ( selecteur == i )? letterSelect : letterNoSelect, table[ i ] );
+
+			i++;
 		}
 		
-		switch ( getchar ( ) )
-		{
+		do
+		{ // get key
+			#ifdef __linux__
+			i = getchar ( );
+			#else
+			i = _getch ( );
+			#endif
+		}
+		while ( 
+			#ifdef __linux__
+			// for linux
+			( i != 0x41 ) && 
+			( i != 0x42 ) &&
+			( i != '\n' )
+			#else
+			// for windows
+			( i != 0x50 ) && 
+			( i != 0x48 ) &&
+			( i != '\r' )
+			#endif
+			);
+
+		switch ( i )
+		{ // manage key value
 			case 0x41:
-			{ // up key is : 0x1b5b41
+			case 0x48:
+			{ // up key is : 0x5b41
 				selecteur = ( selecteur - 1 + nbEelemtns ) % nbEelemtns;
 				break;
 			}
 			case 0x42:
-			{ // down key is : 0x1b5b42
+			case 0x50:
+			{ // down key is : 0x5b42
 				selecteur = ( selecteur + 1 ) % nbEelemtns;
 				break;
 			}
 			case '\n':
+			case '\r':
 			{
 				choix = selecteur;
 				break;
 			}
 		}
 
+		#ifdef __linux__
 		if ( choix < 0 )
 		{
 			printf ( "\e[%dA", nbEelemtns );
 		}
+		#else
+		system ( "cls" );
+		#endif
 	}
 	while ( choix < 0 );
 
@@ -271,72 +346,10 @@ int menu ( int argc, ... )
 	{
 		free ( table );
 	}
-
+	
+	#ifdef __linux__
 	resetBlockMode ( mask );
-
+	#endif
+	
 	return ( choix );
 }
-
-
-#ifdef TEST_PASSWORD
-
-#include <string.h>
-
-int main ( void )
-{
-	char password[ 32 ] = { 0 };
-	char *menuTable[] = {
-		"menu a", "menu b", "menu c", NULL,
-	};
-	void * ptr = NULL;
-	char c;
-
-	printf ( "password : " );
-
-	getPassword ( password, 32, '*' );
-
-	printf ( "\ntyped : %s : %ld\n", password, strlen ( password ) );
-
-	printf ( "password : " );
-
-	getPassword ( password, 32, 0 );
-
-	printf ( "\ntyped : %s : %ld\n", password, strlen ( password ) );
-
-
-	printf ( "demo for input without enter\n" );
-	setBlockMode ( &ptr, false );
-	while ( ( c = getchar ( ) ) != '\n' )
-	{
-		printf ( "-%c |", c );
-	}
-	resetBlockMode ( ptr );
-
-	printf ( "press enter to continue\n" );
-	getchar ( );
-	
-	printf ( "demo for menu\n" );
-	// default  menu
-	menu ( 3, "A--", "B--", "C--", NULL );
-
-	// default  menu by table
-	menu ( 0, menuTable, NULL );
-
-	// color on selector and ustom selector
-	menu ( 3, "A--", "B--", "C--", "\e[1;36m*\e[0m", NULL );
-	system ( "clear" );
-
-	// selector and color for not select items, displayed on position X/Y
-	printf ( " choice%d\n", menu ( 3, "A--", "B--", "C--", ">", " \e[31m", 3, 6, NULL ) );
-	system ( "clear" );
-
-	// two colors no selector
-	menu ( 3, "A--", "B--", "C--", " \e[1;32m", " \e[31m", 3, 6, NULL );
-
-	// larger selector
-	menu ( 3, "A--", "B--", "C--", "--", " " );
-
-	return  ( 0 );
-}
-
-#endif
