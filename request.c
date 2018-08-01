@@ -337,7 +337,10 @@ int menu ( int argc, ... )
 			printf ( "\e[%dA", nbEelemtns );
 		}
 		#else
-		system ( "cls" );
+		if ( choix < 0 )
+		{
+			system ( "cls" );
+		}
 		#endif
 	}
 	while ( choix < 0 );
