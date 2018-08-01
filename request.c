@@ -195,7 +195,6 @@ void setPosition ( int x, int y )
 int menu ( int argc, ... )
 {
 	#ifdef __linux__
-	static struct termios oldMask, newMask;
 	void *mask = NULL;
 	#endif
 	va_list list;
