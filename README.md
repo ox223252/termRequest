@@ -61,14 +61,9 @@ int main ( void )
 int getPassword ( char * const password, const unsigned int size, const char byte );
 ```
 
-#### password:
-pointer on string to store password
-
-#### size:
-max size of password, without last '\0'
-
-#### byte:
-byte that replace the default print
+ - **password**: pointer on string to store password
+ - **size**: max size of password, without last '\0'
+ - **byte**: byte that replace the default print
 
 ### setBlockMode:
 ```C
@@ -89,25 +84,23 @@ void setPosition ( int x, int y );
 ```C
 int menu ( int argc, ... );
 ```
-
-#### argc:
-number of elements in menu [ N ]
-
-#### variadic:
-if argc > 0
- - char * menuElement[ 0 ]
- - char * menuElement[ ... ]
- - char * menuElement[ N-1 ]
- - char * selector string ( length < 32 )
- - char * unselector string ( length < 32 )
- - int x position
- - int y position
-else
- - char \*[ N ] menu table
- - char * selector string ( length < 32 )
- - char * unselector string ( length < 32 )
- - int x position
- - int y position
+ 
+ - **argc**: number of elements in menu [ N ]
+ - **variadic**: 
+   - if argc > 0
+     - **char [ ]**: menuElement [ 0 ]
+     - **char [ ]**: menuElement [ ... ]
+     - **char [ ]**: menuElement [ N-1 ]
+     - **char [ ]**: selector string ( length < 32 )
+     - **char [ ]**: unselector string ( length < 32 )
+     - **int**: x position
+     - **int**: y position
+   - else
+     - **\*char [ N ]**: menu table
+     - **char [ ]**: selector string ( length < 32 )
+     - **char [ ]**: unselector string ( length < 32 )
+     - **int**: x position
+     - **int**: y position
 
 the last element should be NULL, if argc is zero, then the last element of table should be NULL too.
 
@@ -146,34 +139,31 @@ int main ( void )
 int getPassword ( char * const password, const unsigned int size, const char byte );
 ```
 
-#### password:
-pointer on string to store password
-
-#### size:
-max size of password, without last '\0'
-
-#### byte:
-byte that replace the default print
+ - **password**: pointer on string to store password
+ - **size**: max size of password, without last '\0'
+ - **byte**: byte that replace the default print
 
 ### menu;
 ```C
 int menu ( int argc, ... );
 ```
 
-#### argc:
-number of elements in menu [ N ]
-
-#### variadic:
-if argc > 0
- - char * menuElement[ 0 ]
- - char * menuElement[ ... ]
- - char * menuElement[ N-1 ]
- - char * selector string ( length < 32 )
- - char * unselector string ( length < 32 )
-else
- - char \*[ N ] menu table
- - char * selector string ( length < 32 )
- - char * unselector string ( length < 32 )
+ - **argc**: number of elements in menu [ N ]
+ - **variadic**: 
+   - if argc > 0
+     - **char [ ]**: menuElement [ 0 ]
+     - **char [ ]**: menuElement [ ... ]
+     - **char [ ]**: menuElement [ N-1 ]
+     - **char [ ]**: selector string ( length < 32 )
+     - **char [ ]**: unselector string ( length < 32 )
+     - **int**: x position
+     - **int**: y position
+   - else
+     - **\*char [ N ]**: menu table
+     - **char [ ]**: selector string ( length < 32 )
+     - **char [ ]**: unselector string ( length < 32 )
+     - **int**: x position
+     - **int**: y position
 
 The last element should be NULL, if argc is zero, then the last element of table should be NULL too.
 
