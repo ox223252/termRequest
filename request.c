@@ -20,6 +20,8 @@
 #include <stdio.h>
 
 #ifdef __linux__
+// https://linux.die.net/man/3/termios
+// http://manpagesfr.free.fr/man/man3/termios.3.html
 #include <termios.h>
 #include <sys/ioctl.h>
 #else
@@ -130,6 +132,19 @@ int getPassword ( char * const password, const unsigned int size, const char byt
 }
 
 #ifdef __linux__
+
+void setGetCharTimeOut ( unsigned char time, unsigned char min )
+{
+	static struct termios mask;
+
+	tcgetattr ( STDIN_FILENO, &mask );
+	
+	mask.c_cc[ VMIN ] = min;
+	mask.c_cc[VTIME] = time;
+
+	tcsetattr( STDIN_FILENO, TCSANOW, &mask );
+}
+
 int setBlockMode ( void ** const outPtr, bool hide )
 {
 	static struct termios oldMask, newMask;
@@ -189,6 +204,9 @@ void setPosition ( int x, int y )
 
 #else
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+void setGetCharTimeOut ( unsigned char time, unsigned char min )
+{ // not avaliable for windows
+}
 int setBlockMode ( void ** const outPtr, bool hide )
 { // not avaliable for windows
 	return ( __LINE__ );
@@ -371,9 +389,9 @@ KEY_CODE getMovePad ( const bool blockMode )
 {
 	unsigned short data = 0;
 
-	void * tmp = NULL;
-	
 	#ifdef __linux__
+		void * tmp = NULL;
+	
 		if ( blockMode )
 		{
 			setBlockMode ( &tmp, true );
@@ -383,6 +401,8 @@ KEY_CODE getMovePad ( const bool blockMode )
 
 		if ( data == 0x1b )
 		{ // escape of key up/down/left/right
+			setGetCharTimeOut ( 0, 0 );
+
 			if ( getchar ( ) == 0x1b )
 			{
 				data = KEYCODE_ESCAPE;
@@ -391,6 +411,8 @@ KEY_CODE getMovePad ( const bool blockMode )
 			{
 				data = getchar ( );
 			}
+			
+			setGetCharTimeOut ( 0, 1 );
 		}
 	#else
 		if ( blockMode )

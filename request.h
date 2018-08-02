@@ -42,6 +42,33 @@
 int getPassword ( char * const password, const unsigned int size, 
 	const char byte );
 
+
+////////////////////////////////////////////////////////////////////////////////
+/// \fn void setGetCharTimeOut ( unsigned char time, unsigned char min );
+/// \param [ in ] time : time for timeout in tenth of seconds
+/// \param [ in ] min : number minimum of byte reads
+/// \brief will set the timeout and min bytes needed to be read
+///     MIN == 0; TIME == 0: If data is available, read(2) returns immediately,
+///     with the lesser of the number of bytes available, or the number of bytes
+///     requested. If no data is available, read(2) returns 0. 
+///     MIN > 0; TIME == 0: read(2) blocks until the lesser of MIN bytes or the 
+///     number of bytes requested are available, and returns the lesser of these
+///     two values. 
+///     MIN == 0; TIME > 0: TIME specifies the limit for a timer in tenths of a 
+///     second. The timer is started when read(2) is called. read(2) returns 
+///     either when at least one byte of data is available, or when the timer 
+///     expires. If the timer expires without any input becoming available, 
+///     read(2) returns 0. 
+///     MIN > 0; TIME > 0: TIME specifies the limit for a timer in tenths of a 
+///     second. Once an initial byte of input becomes available, the timer is 
+///     restarted after each further byte is received. read(2) returns either 
+///     when the lesser of the number of bytes requested or MIN byte have been
+///     read, or when the inter-byte timeout expires. Because the timer is only
+///     started after the initial byte becomes available, at least one byte will
+///     be read. 
+////////////////////////////////////////////////////////////////////////////////
+void setGetCharTimeOut ( unsigned char time, unsigned char min );
+
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn int setBlockMode ( void ** const outPtr, bool hide );
 /// \param [ in ] outPtr : return mask flag need to resetBlockMode
@@ -108,7 +135,6 @@ KEY_CODE;
 /// \param [ in ] blockMode : flag to determine if function should pass to block
 ///     mode itself
 /// \brief this function while return a key for azerty key board
-/// \note to escape of this function you should press twice ESC key
 ////////////////////////////////////////////////////////////////////////////////
 KEY_CODE getMovePad ( const bool blockMode );
 
