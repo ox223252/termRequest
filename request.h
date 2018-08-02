@@ -92,4 +92,24 @@ void setPosition ( int x, int y );
 ////////////////////////////////////////////////////////////////////////////////
 int menu ( int argc, ... );
 
+typedef enum
+{
+	KEYCODE_ESCAPE,
+	KEYCODE_UP,
+	KEYCODE_LEFT,
+	KEYCODE_DOWN,
+	KEYCODE_RIGHT,
+	KEYCODE_SPACE,
+}
+KEY_CODE;
+
+////////////////////////////////////////////////////////////////////////////////
+/// \fnint getMovePad ( const bool blockMode )
+/// \param [ in ] blockMode : flag to determine if function should pass to block
+///     mode itself
+/// \brief this function while return a key for azerty key board
+/// \note to escape of this function you should press twice ESC key
+////////////////////////////////////////////////////////////////////////////////
+KEY_CODE getMovePad ( const bool blockMode );
+
 #endif

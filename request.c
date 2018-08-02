@@ -30,6 +30,8 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
+#include "request.h"
+
 #ifdef __linux__
 #define COLOR_NONE "\e[0m"
 #else
@@ -39,11 +41,19 @@
 #include "request.h"
 
 #ifdef __linux__
-const char _request_enter = '\n';
-const char _request_backSpace = 0x7f;
+static const char _request_enter = '\n';
+static const char _request_backSpace = 0x7f;
+#define _request_up 0x41
+#define _request_down 0x42
+#define _request_left 0x44
+#define _request_right 0x43
 #else
-const char _request_enter = '\r';
-const char _request_backSpace = 0x08;
+static const char _request_enter = '\r';
+static const char _request_backSpace = 0x08;
+#define _request_up 0x48
+#define _request_down 0x50
+#define _request_left 0x4b
+#define _request_right 0x4d
 #endif
 
 int getPassword ( char * const password, const unsigned int size, const char byte )
@@ -176,6 +186,7 @@ void setPosition ( int x, int y )
 		( ( x > 0 )? x : w.ws_row + x ), 
 		( ( y > 0 )? y : w.ws_col + y ) );
 }
+
 #else
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 int setBlockMode ( void ** const outPtr, bool hide )
@@ -275,10 +286,10 @@ int menu ( int argc, ... )
 			}
 
 			#ifdef __linux__
-			if ( position.x && position.y )
-			{ // only if postion is set
-				setPosition ( position.x + i, position.y );
-			}
+				if ( position.x && position.y )
+				{ // only if postion is set
+					setPosition ( position.x + i, position.y );
+				}
 			#endif
 
 			printf ( " %s %s "COLOR_NONE"\n", ( selecteur == i )? letterSelect : letterNoSelect, table[ i ] );
@@ -289,22 +300,22 @@ int menu ( int argc, ... )
 		do
 		{ // get key
 			#ifdef __linux__
-			i = getchar ( );
+				i = getchar ( );
 			#else
-			i = _getch ( );
+				i = _getch ( );
 			#endif
 		}
 		while ( 
 			#ifdef __linux__
-			// for linux
-			( i != 0x41 ) && 
-			( i != 0x42 ) &&
-			( i != '\n' )
+				// for linux
+				( i != 0x41 ) && 
+				( i != 0x42 ) &&
+				( i != '\n' )
 			#else
-			// for windows
-			( i != 0x50 ) && 
-			( i != 0x48 ) &&
-			( i != '\r' )
+				// for windows
+				( i != 0x50 ) && 
+				( i != 0x48 ) &&
+				( i != '\r' )
 			#endif
 			);
 
@@ -331,15 +342,15 @@ int menu ( int argc, ... )
 		}
 
 		#ifdef __linux__
-		if ( choix < 0 )
-		{
-			printf ( "\e[%dA", nbEelemtns );
-		}
+			if ( choix < 0 )
+			{
+				printf ( "\e[%dA", nbEelemtns );
+			}
 		#else
-		if ( choix < 0 )
-		{
-			system ( "cls" );
-		}
+			if ( choix < 0 )
+			{
+				system ( "cls" );
+			}
 		#endif
 	}
 	while ( choix < 0 );
@@ -352,6 +363,97 @@ int menu ( int argc, ... )
 	#ifdef __linux__
 	resetBlockMode ( mask );
 	#endif
-	
+
 	return ( choix );
+}
+
+KEY_CODE getMovePad ( const bool blockMode )
+{
+	unsigned short data = 0;
+
+	void * tmp = NULL;
+	
+	#ifdef __linux__
+		if ( blockMode )
+		{
+			setBlockMode ( &tmp, true );
+		}
+
+		data = getchar ( );
+
+		if ( data == 0x1b )
+		{ // escape of key up/down/left/right
+			if ( getchar ( ) == 0x1b )
+			{
+				data = KEYCODE_ESCAPE;
+			}
+			else
+			{
+				data = getchar ( );
+			}
+		}
+	#else
+		if ( blockMode )
+		{
+			data = _getch ( );
+		}
+		else
+		{
+			data = getchar ( );
+		}
+
+		if ( ( data == 0 ) ||
+			( data == 0xe0 ) )
+		{
+			data = _getch ( );
+		}
+	#endif
+
+	switch ( data )
+	{
+		case 'z':
+		case 'w':
+		case _request_up:
+		{
+			data = KEYCODE_UP;
+			break;
+		}
+		case 'q':
+		case 'a':
+		case _request_left:
+		{
+			data = KEYCODE_LEFT;
+			break;
+		}
+		case 's':
+		case _request_down:
+		{
+			data = KEYCODE_DOWN;
+			break;
+		}
+		case 'd':
+		case _request_right:
+		{
+			data = KEYCODE_RIGHT;
+			break;
+		}
+		case ' ':
+		{
+			data = KEYCODE_SPACE;
+			break;
+		}
+		default:
+		{
+			data = KEYCODE_ESCAPE;
+		}
+	}
+
+	#ifdef __linux__
+		if ( blockMode )
+		{
+			resetBlockMode ( tmp );
+		}
+	#endif
+
+	return ( data );
 }
