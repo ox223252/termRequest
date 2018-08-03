@@ -145,20 +145,44 @@ void setGetCharTimeOut ( unsigned char time, unsigned char min )
 	tcsetattr( STDIN_FILENO, TCSANOW, &mask );
 }
 
-int setBlockMode ( void ** const outPtr, bool hide )
+int getTermSatatus ( void ** const outPtr )
 {
-	static struct termios oldMask, newMask;
-
 	if ( !outPtr )
 	{
 		errno = EINVAL;
 		return ( __LINE__ );
 	}
 
+	if ( !*outPtr )
+	{ // need to allocate space
+		*outPtr = malloc ( sizeof ( struct termios ) );
+		if ( !*outPtr )
+		{
+			return ( __LINE__ );
+		}
+	}
+
+	return ( tcgetattr ( STDIN_FILENO, *outPtr ) );
+}
+
+int setTermSatatus ( const void * const ptr )
+{
+	if ( !ptr )
+	{
+		errno = EINVAL;
+		return ( __LINE__ );
+	}
+
+	return ( tcsetattr( STDIN_FILENO, TCSANOW, (struct termios * )ptr ) );
+}
+
+int setBlockMode ( void ** const outPtr, bool hide )
+{
+	static struct termios oldMask, newMask;
+
 	tcgetattr ( STDIN_FILENO, &oldMask );
 
 	newMask = oldMask;
-
 	newMask.c_lflag &= ~(ICANON); // avoid <enter>
 
 	if ( hide )
@@ -168,24 +192,19 @@ int setBlockMode ( void ** const outPtr, bool hide )
 
 	tcsetattr( STDIN_FILENO, TCSANOW, &newMask );
 
-	*outPtr = &oldMask;
+	if ( outPtr )
+	{
+		*outPtr = &oldMask;
+	}
 
 	return( 0 );
 }
 
 int resetBlockMode ( const void * const ptr )
 {
-
-	if ( !ptr )
-	{
-		errno = EINVAL;
-		return ( __LINE__ );
-	}
-
-	tcsetattr( STDIN_FILENO, TCSANOW, (struct termios * )ptr );
-
-	return( 0 );
+	return ( setTermSatatus ( ptr ) );
 }
+
 
 void setPosition ( int x, int y )
 {
