@@ -18,6 +18,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #ifdef __linux__
 // https://linux.die.net/man/3/termios
@@ -26,11 +27,13 @@
 #include <sys/ioctl.h>
 #else
 #include <conio.h>
+#include <windows.h>
 #endif
 
 #include <unistd.h>
 #include <stdarg.h>
 #include <stdlib.h>
+
 
 #include "request.h"
 
@@ -205,7 +208,6 @@ int resetBlockMode ( const void * const ptr )
 	return ( setTermSatatus ( ptr ) );
 }
 
-
 void setPosition ( int x, int y )
 {
 	struct winsize w;
@@ -219,6 +221,15 @@ void setPosition ( int x, int y )
 	printf ( "\e[%d;%dH", 
 		( ( x > 0 )? x : w.ws_row + x ), 
 		( ( y > 0 )? y : w.ws_col + y ) );
+}
+
+void getSize ( int *row, int *col )
+{
+	struct winsize w;
+	ioctl ( STDOUT_FILENO, TIOCGWINSZ, &w );
+
+	*row = w.ws_row;
+	*col = w.ws_col;
 }
 
 #else
@@ -237,6 +248,17 @@ int resetBlockMode ( const void * const ptr )
 void setPosition ( int x, int y )
 { // not avaliable for windows
 }
+
+void getSize ( int *row, int *col )
+{
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    int columns, rows;
+
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    *col = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    *row = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+}
+
 #pragma GCC diagnostic pop
 #endif
 
@@ -483,9 +505,14 @@ KEY_CODE getMovePad ( const bool blockMode )
 			data = KEYCODE_SPACE;
 			break;
 		}
-		default:
+		case 0x1b:
 		{
 			data = KEYCODE_ESCAPE;
+			break;
+		}
+		default:
+		{
+			data = KEYCODE_NONE;
 		}
 	}
 

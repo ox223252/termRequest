@@ -112,6 +112,13 @@ int resetBlockMode ( const void * const ptr );
 void setPosition ( int x, int y );
 
 ////////////////////////////////////////////////////////////////////////////////
+/// \fn void getSize ( int *row, int *col );
+/// \param[ out ] row : number of row
+/// \param[ out ] col : number of column
+////////////////////////////////////////////////////////////////////////////////
+void getSize ( int *row, int *col );
+
+////////////////////////////////////////////////////////////////////////////////
 /// \fn int menu ( int argc, ... );
 /// \param [ in ] argc : number of menu element
 /// \param [ in ] variadic :
@@ -143,6 +150,7 @@ typedef enum
 	KEYCODE_DOWN,
 	KEYCODE_RIGHT,
 	KEYCODE_SPACE,
+	KEYCODE_NONE
 }
 KEY_CODE;
 
