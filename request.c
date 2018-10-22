@@ -208,19 +208,19 @@ int resetBlockMode ( const void * const ptr )
 	return ( setTermSatatus ( ptr ) );
 }
 
-void setPosition ( int x, int y )
+void setPosition ( int row, int col )
 {
 	struct winsize w;
 
-	if ( ( x < 0 ) ||
-		( y < 0 ) )
+	if ( ( row < 0 ) ||
+		( col < 0 ) )
 	{
 		ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 	}
 
 	printf ( "\e[%d;%dH", 
-		( ( x > 0 )? x : w.ws_row + x ), 
-		( ( y > 0 )? y : w.ws_col + y ) );
+		( ( row > 0 )? row : w.ws_row + row ), 
+		( ( col > 0 )? col : w.ws_col + col ) );
 }
 
 void getSize ( int *row, int *col )
@@ -245,8 +245,40 @@ int resetBlockMode ( const void * const ptr )
 { // not avaliable for windows
 	return ( __LINE__ );
 }
-void setPosition ( int x, int y )
-{ // not avaliable for windows
+void setPosition ( int row, int col )
+{
+	COORD coord;
+	int R;
+	int C;
+
+	row -= 1;
+	col -= 1;
+
+	if ( ( row <= 0 ) ||
+		( col <= 0 ) )
+	{
+		getSize ( &R, &C );
+	}
+
+	if ( col < 0 )
+	{
+		coord.X = C + col;
+	}
+	else
+	{
+		coord.X = col;
+	}
+
+	if ( row < 0 )
+	{
+		coord.Y = R + row;
+	}
+	else
+	{
+		coord.Y = row;
+	}
+
+	SetConsoleCursorPosition ( GetStdHandle ( STD_OUTPUT_HANDLE ), coord );
 }
 
 void getSize ( int *row, int *col )
@@ -254,7 +286,7 @@ void getSize ( int *row, int *col )
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     int columns, rows;
 
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    GetConsoleScreenBufferInfo ( GetStdHandle ( STD_OUTPUT_HANDLE ), &csbi);
     *col = csbi.srWindow.Right - csbi.srWindow.Left + 1;
     *row = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 }
