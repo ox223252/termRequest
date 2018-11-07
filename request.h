@@ -23,7 +23,7 @@
 /// \author ox223252
 /// \date 2018-07
 /// \copyright GPLv2
-/// \version 0.4
+/// \version 0.5
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <stdbool.h>
@@ -75,7 +75,7 @@ void setGetCharTimeOut ( unsigned char time, unsigned char min );
 /// \brief get status of termios 
 /// \return if 0 the OK else see errno for more details
 ////////////////////////////////////////////////////////////////////////////////
-int getTermSatatus ( void ** const outPtr );
+int getTermStatus ( void ** const outPtr );
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn int setTermSatatus ( const void * const ptr );
@@ -83,7 +83,7 @@ int getTermSatatus ( void ** const outPtr );
 /// \brief set terminal status
 /// \return if 0 the OK else see errno for more details
 ////////////////////////////////////////////////////////////////////////////////
-int setTermSatatus ( const void * const ptr );
+int setTermStatus ( const void * const ptr );
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn int setBlockMode ( void ** const outPtr, bool hide );

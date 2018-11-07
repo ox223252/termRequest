@@ -134,7 +134,7 @@ int getPassword ( char * const password, const unsigned int size, const char byt
 	return ( 0 );
 }
 
-#ifdef __linux__
+#if defined( __linux__ )
 
 void setGetCharTimeOut ( unsigned char time, unsigned char min )
 {
@@ -148,7 +148,7 @@ void setGetCharTimeOut ( unsigned char time, unsigned char min )
 	tcsetattr( STDIN_FILENO, TCSANOW, &mask );
 }
 
-int getTermSatatus ( void ** const outPtr )
+int getTermStatus ( void ** const outPtr )
 {
 	if ( !outPtr )
 	{
@@ -168,7 +168,7 @@ int getTermSatatus ( void ** const outPtr )
 	return ( tcgetattr ( STDIN_FILENO, *outPtr ) );
 }
 
-int setTermSatatus ( const void * const ptr )
+int setTermStatus ( const void * const ptr )
 {
 	if ( !ptr )
 	{
@@ -205,7 +205,7 @@ int setBlockMode ( void ** const outPtr, bool hide )
 
 int resetBlockMode ( const void * const ptr )
 {
-	return ( setTermSatatus ( ptr ) );
+	return ( setTermStatus ( ptr ) );
 }
 
 void setPosition ( int row, int col )
@@ -237,6 +237,16 @@ void getSize ( int *row, int *col )
 void setGetCharTimeOut ( unsigned char time, unsigned char min )
 { // not avaliable for windows
 }
+
+int getTermStatus ( void ** const outPtr )
+{ // not avaliable for windows
+	return ( 1 );
+}
+int setTermStatus ( const void * const ptr )
+{ // not avaliable for windows
+	return ( 1 );
+}
+
 int setBlockMode ( void ** const outPtr, bool hide )
 { // not avaliable for windows
 	return ( __LINE__ );
