@@ -21,16 +21,21 @@ int main ( void )
 	printf ( "\ntyped : %s : %ld\n", password, strlen ( password ) );
 
 	printf ( "demo for input without enter\n" );
-	setBlockMode ( &ptr, false );
-	while ( ( c = getchar ( ) ) != '\n' )
+	while ( 1 )
 	{
+		c = _getch ( );
+		if ( ( c == '\n' ) ||
+			( c == '\r' ) ||
+			( c == EOF ) )
+		{
+			break;
+		}
 		printf ( "-%c |", c );
 	}
-	resetBlockMode ( ptr );
 
-	printf ( "press enter to continue\n" );
+	printf ( "\npress enter to continue\n" );
 	getchar ( );
-	
+
 	printf ( "demo for menu\n" );
 	// default  menu
 	menu ( 3, "A--", "B--", "C--", NULL );
@@ -40,11 +45,11 @@ int main ( void )
 
 	// color on selector and ustom selector
 	menu ( 3, "A--", "B--", "C--", "\e[1;36m*\e[0m", NULL );
-	system ( "clear" );
+	clear ( );
 
 	// selector and color for not select items, displayed on position X/Y
 	printf ( " choice%d\n", menu ( 3, "A--", "B--", "C--", ">", " \e[31m", 3, 6, NULL ) );
-	system ( "clear" );
+	clear ( );
 
 	// two colors no selector
 	menu ( 3, "A--", "B--", "C--", " \e[1;32m", " \e[31m", 3, 6, NULL );

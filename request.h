@@ -23,7 +23,7 @@
 /// \author ox223252
 /// \date 2018-07
 /// \copyright GPLv2
-/// \version 0.5
+/// \version 0.5.1
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <stdbool.h>
@@ -93,7 +93,7 @@ int setTermStatus ( const void * const ptr );
 ///     need to wait to press enter.
 /// \return if 0 the OK else see errno for more details
 ////////////////////////////////////////////////////////////////////////////////
-int setBlockMode ( void ** const outPtr, bool hide );
+int setBlockMode ( void ** const outPtr, bool hide ) __attribute__ ((deprecated));
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn int resetBlockMode ( const void * const ptr );
@@ -101,7 +101,7 @@ int setBlockMode ( void ** const outPtr, bool hide );
 /// \brief reset terminal block mode
 /// \return if 0 the OK else see errno for more details
 ////////////////////////////////////////////////////////////////////////////////
-int resetBlockMode ( const void * const ptr );
+int resetBlockMode ( const void * const ptr ) __attribute__ ((deprecated));
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn void setPosition ( int x, int y );
@@ -117,6 +117,42 @@ void setPosition ( int x, int y );
 /// \param[ out ] col : number of column
 ////////////////////////////////////////////////////////////////////////////////
 void getSize ( int *row, int *col );
+
+#if defined(_WIN32) || defined(_WIN64)
+#include <conio.h>
+#else
+////////////////////////////////////////////////////////////////////////////////
+/// \fn int _getch ( void );
+/// \breif function read a single character from the console without echoing the
+///     character
+/// \return the character
+////////////////////////////////////////////////////////////////////////////////
+int _getch ( void );
+
+////////////////////////////////////////////////////////////////////////////////
+/// \fn int _getche ( void );
+/// \breif function read a single character from the console with echo
+/// \return the character
+////////////////////////////////////////////////////////////////////////////////
+int _getche ( void );
+
+////////////////////////////////////////////////////////////////////////////////
+/// \fn int _kbhit ( void );
+/// \biref this function checks the console for a recent keystroke.
+/// \warning the comportement differ a little bit between Windows and unixs,
+///     this funcion return if a key is pressed on the keyboard, on unixs, its
+///     return if a key is stored of if key is pressed. You should clean buffer
+///     before using it to avoid this problem
+/// \return a nonzero value if a key has been pressed. Otherwise, it returns 0.
+////////////////////////////////////////////////////////////////////////////////
+int _kbhit ( void );
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+/// \fn void clear ( void );
+/// \breif clean screen
+////////////////////////////////////////////////////////////////////////////////
+void clear ( void );
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn int menu ( int argc, ... );

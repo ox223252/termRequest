@@ -20,9 +20,10 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#ifdef __linux__
+#if defined( __linux__ ) || defined( __APPLE__ )
 // https://linux.die.net/man/3/termios
 // http://manpagesfr.free.fr/man/man3/termios.3.html
+#include <fcntl.h>
 #include <termios.h>
 #include <sys/ioctl.h>
 #else
@@ -40,7 +41,7 @@
 #ifdef __linux__
 #define COLOR_NONE "\e[0m"
 #else
-#define COLOR_NONE 
+#define COLOR_NONE "\e[0m"
 #endif
 
 #include "request.h"
@@ -63,9 +64,6 @@ static const char _request_backSpace = 0x08;
 
 int getPassword ( char * const password, const unsigned int size, const char byte )
 {
-	#ifdef __linux__
-	static struct termios oldMask, newMask;
-	#endif
 	unsigned int i  = 0;
 
 	if ( !password ||
@@ -75,24 +73,9 @@ int getPassword ( char * const password, const unsigned int size, const char byt
 		return( __LINE__ );
 	}
 	
-	#ifdef __linux__
-	tcgetattr ( STDIN_FILENO, &oldMask );
-
-	newMask = oldMask;
-
-	newMask.c_lflag &= ~(ICANON); // avoid <enter>
-	newMask.c_lflag &= ~(ECHO); // hide text typed
-
-	tcsetattr( STDIN_FILENO, TCSANOW, &newMask );
-	#endif
-
 	while ( i < ( size - 1 ) )
 	{
-		#ifdef __linux__
-		password[ i ] = getchar ( );
-		#else
 		password[ i ] = _getch ( );
-		#endif
 
 		if ( password[ i ] == _request_enter )
 		{
@@ -127,14 +110,10 @@ int getPassword ( char * const password, const unsigned int size, const char byt
 		}
 	}
 
-	#ifdef __linux__
-	tcsetattr( STDIN_FILENO, TCSANOW, &oldMask);
-	#endif
-
 	return ( 0 );
 }
 
-#if defined( __linux__ )
+#if defined( __linux__ ) || defined( __APPLE__ )
 
 void setGetCharTimeOut ( unsigned char time, unsigned char min )
 {
@@ -223,6 +202,29 @@ void setPosition ( int row, int col )
 		( ( col > 0 )? col : w.ws_col + col ) );
 }
 
+void getPosition ( int * const restrict row, int * const restrict col )
+{
+	struct winsize w;
+
+	if ( ( row < 0 ) ||
+		( col < 0 ) )
+	{
+		ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+	}
+
+	if ( row )
+	{
+		*row = w.ws_row;
+	}
+
+	if ( col )
+	{
+		*col = w.ws_col;
+	}
+
+	printf ( "x/y : %d %d\n", w.ws_row, w.ws_col );
+}
+
 void getSize ( int *row, int *col )
 {
 	struct winsize w;
@@ -230,6 +232,79 @@ void getSize ( int *row, int *col )
 
 	*row = w.ws_row;
 	*col = w.ws_col;
+}
+
+int _getch ( void )
+{
+	struct termios oldMask, newMask;
+	char c = 0;
+
+	tcgetattr ( STDIN_FILENO, &oldMask );
+
+	newMask = oldMask;
+	newMask.c_lflag &= ~(ICANON|ECHO); // avoid <enter>
+
+	tcsetattr( STDIN_FILENO, TCSANOW, &newMask );
+
+	c = getchar();
+
+	tcsetattr( STDIN_FILENO, TCSANOW, &oldMask );
+
+	return ( c );
+}
+
+int _getche ( void )
+{
+	struct termios oldMask, newMask;
+	char c = 0;
+
+	tcgetattr ( STDIN_FILENO, &oldMask );
+
+	newMask = oldMask;
+	newMask.c_lflag &= ~(ICANON); // avoid <enter>
+
+	tcsetattr( STDIN_FILENO, TCSANOW, &newMask );
+
+	c = getchar();
+
+	tcsetattr( STDIN_FILENO, TCSANOW, &oldMask );
+
+	return ( c );
+}
+
+int _kbhit ( void )
+{
+	struct termios oldMask, newMask;
+	char c = 0;
+	int mask = 0;
+
+	tcgetattr ( STDIN_FILENO, &oldMask );
+
+	newMask = oldMask;
+	newMask.c_lflag &= ~(ICANON|ECHO); // avoid <enter>
+
+	mask = fcntl ( STDIN_FILENO, F_GETFL, 0 );
+
+	tcsetattr( STDIN_FILENO, TCSANOW, &newMask );
+	fcntl ( STDIN_FILENO, F_SETFL, mask | O_NONBLOCK );
+
+	c = getchar();
+
+	tcsetattr( STDIN_FILENO, TCSANOW, &oldMask );
+	fcntl ( STDIN_FILENO, F_SETFL, mask );
+
+	if ( c != EOF )
+	{
+		ungetc ( c, stdin );
+		return ( 1 );
+	}
+
+	return ( 0 );
+}
+
+void clear ( )
+{
+	system ( "clear" );
 }
 
 #else
@@ -251,10 +326,12 @@ int setBlockMode ( void ** const outPtr, bool hide )
 { // not avaliable for windows
 	return ( __LINE__ );
 }
+
 int resetBlockMode ( const void * const ptr )
 { // not avaliable for windows
 	return ( __LINE__ );
 }
+
 void setPosition ( int row, int col )
 {
 	COORD coord;
@@ -291,6 +368,38 @@ void setPosition ( int row, int col )
 	SetConsoleCursorPosition ( GetStdHandle ( STD_OUTPUT_HANDLE ), coord );
 }
 
+static COORD GetConsoleCursorPosition(HANDLE hConsoleOutput)
+{
+	CONSOLE_SCREEN_BUFFER_INFO cbsi;
+	if ( GetConsoleScreenBufferInfo ( hConsoleOutput, &cbsi ) )
+	{
+		return cbsi.dwCursorPosition;
+	}
+	else
+	{
+		// The function failed. Call GetLastError() for details.
+		COORD invalid = { 0, 0 };
+		return invalid;
+	}
+}
+
+void getPosition ( int * const restrict row, int * const restrict col )
+{
+	COORD coord;
+
+	coord = GetConsoleCursorPosition ( GetStdHandle ( STD_OUTPUT_HANDLE ) );
+
+	if ( row )
+	{
+		*row = coord.Y;
+	}
+
+	if ( col )
+	{
+		*col = coord.X;
+	}
+}
+
 void getSize ( int *row, int *col )
 {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -299,6 +408,11 @@ void getSize ( int *row, int *col )
     GetConsoleScreenBufferInfo ( GetStdHandle ( STD_OUTPUT_HANDLE ), &csbi);
     *col = csbi.srWindow.Right - csbi.srWindow.Left + 1;
     *row = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+}
+
+void clear ( )
+{
+	system ( "cls" );
 }
 
 #pragma GCC diagnostic pop
@@ -326,10 +440,6 @@ int menu ( int argc, ... )
 		int y;
 	}
 	position = { 0 };
-
-	#ifdef __linux__
-	setBlockMode ( &mask, true );
-	#endif
 
 	va_start ( list, argc );
 
@@ -386,12 +496,10 @@ int menu ( int argc, ... )
 				break;
 			}
 
-			#ifdef __linux__
-				if ( position.x && position.y )
-				{ // only if postion is set
-					setPosition ( position.x + i, position.y );
-				}
-			#endif
+			if ( position.x && position.y )
+			{ // only if postion is set
+				setPosition ( position.x + i, position.y );
+			}
 
 			printf ( " %s %s "COLOR_NONE"\n", ( selecteur == i )? letterSelect : letterNoSelect, table[ i ] );
 
@@ -400,36 +508,20 @@ int menu ( int argc, ... )
 		
 		do
 		{ // get key
-			#ifdef __linux__
-				i = getchar ( );
-			#else
-				i = _getch ( );
-			#endif
+			i = _getch ( );
 		}
-		while ( 
-			#ifdef __linux__
-				// for linux
-				( i != 0x41 ) && 
-				( i != 0x42 ) &&
-				( i != '\n' )
-			#else
-				// for windows
-				( i != 0x50 ) && 
-				( i != 0x48 ) &&
-				( i != '\r' )
-			#endif
-			);
+		while ( ( i != _request_up ) && 
+			( i != _request_down ) &&
+			( i != _request_enter ) );
 
 		switch ( i )
 		{ // manage key value
-			case 0x41:
-			case 0x48:
+			case _request_up:
 			{ // up key is : 0x5b41
 				selecteur = ( selecteur - 1 + nbEelemtns ) % nbEelemtns;
 				break;
 			}
-			case 0x42:
-			case 0x50:
+			case _request_down:
 			{ // down key is : 0x5b42
 				selecteur = ( selecteur + 1 ) % nbEelemtns;
 				break;
@@ -448,9 +540,12 @@ int menu ( int argc, ... )
 				printf ( "\e[%dA", nbEelemtns );
 			}
 		#else
+			int row;
+			getPosition ( &row, NULL );
+
 			if ( choix < 0 )
 			{
-				system ( "cls" );
+				setPosition ( row - nbEelemtns + 1, 1 );
 			}
 		#endif
 	}
@@ -460,10 +555,6 @@ int menu ( int argc, ... )
 	{
 		free ( table );
 	}
-	
-	#ifdef __linux__
-	resetBlockMode ( mask );
-	#endif
 
 	return ( choix );
 }
@@ -472,47 +563,20 @@ KEY_CODE getMovePad ( const bool blockMode )
 {
 	unsigned short data = 0;
 
-	#ifdef __linux__
-		void * tmp = NULL;
-	
-		if ( blockMode )
-		{
-			setBlockMode ( &tmp, true );
-		}
-
+	if ( blockMode )
+	{
+		data = _getch ( );
+	}
+	else
+	{
 		data = getchar ( );
+	}
 
-		if ( data == 0x1b )
-		{ // escape of key up/down/left/right
-			setGetCharTimeOut ( 0, 0 );
-
-			if ( getchar ( ) == 0x1b )
-			{
-				data = KEYCODE_ESCAPE;
-			}
-			else
-			{
-				data = getchar ( );
-			}
-			
-			setGetCharTimeOut ( 0, 1 );
-		}
-	#else
-		if ( blockMode )
-		{
-			data = _getch ( );
-		}
-		else
-		{
-			data = getchar ( );
-		}
-
-		if ( ( data == 0 ) ||
-			( data == 0xe0 ) )
-		{
-			data = _getch ( );
-		}
-	#endif
+	if ( ( data == 0 ) ||
+		( data == 0xe0 ) )
+	{
+		data = _getch ( );
+	}
 
 	switch ( data )
 	{
@@ -557,13 +621,6 @@ KEY_CODE getMovePad ( const bool blockMode )
 			data = KEYCODE_NONE;
 		}
 	}
-
-	#ifdef __linux__
-		if ( blockMode )
-		{
-			resetBlockMode ( tmp );
-		}
-	#endif
 
 	return ( data );
 }
