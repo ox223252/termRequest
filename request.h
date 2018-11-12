@@ -23,7 +23,7 @@
 /// \author ox223252
 /// \date 2018-07
 /// \copyright GPLv2
-/// \version 0.5.1
+/// \version 0.5
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <stdbool.h>
@@ -44,7 +44,7 @@ int getPassword ( char * const password, const unsigned int size,
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn void setGetCharTimeOut ( unsigned char time, unsigned char min );
+/// \fn int setGetCharTimeOut ( unsigned char time, unsigned char min );
 /// \param [ in ] time : time for timeout in tenth of seconds
 /// \param [ in ] min : number minimum of byte reads
 /// \brief will set the timeout and min bytes needed to be read
@@ -66,9 +66,10 @@ int getPassword ( char * const password, const unsigned int size,
 ///     read, or when the inter-byte timeout expires. Because the timer is only
 ///     started after the initial byte becomes available, at least one byte will
 ///     be read. 
+/// \bug i'm not sure this function fully works on Windows
 ////////////////////////////////////////////////////////////////////////////////
-void setGetCharTimeOut ( unsigned char time, unsigned char min );
-
+ int setGetCharTimeOut ( unsigned char time, unsigned char min );
+ 
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn int getTermSatatus ( void ** const outPtr );
 /// \param [ out ] ptr : ptr on empty space or termios struct

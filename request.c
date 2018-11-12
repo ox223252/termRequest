@@ -41,12 +41,12 @@
 #ifdef __linux__
 #define COLOR_NONE "\e[0m"
 #else
-#define COLOR_NONE "\e[0m"
+#define COLOR_NONE
 #endif
 
 #include "request.h"
 
-#ifdef __linux__
+#if defined( __linux__ ) || defined( __APPLE__ )
 static const char _request_enter = '\n';
 static const char _request_backSpace = 0x7f;
 #define _request_up 0x41
@@ -307,12 +307,28 @@ void clear ( )
 	system ( "clear" );
 }
 
-#else
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-void setGetCharTimeOut ( unsigned char time, unsigned char min )
-{ // not avaliable for windows
+#elif defined( _WIN32 ) || defined( _WIN64 )
+int setGetCharTimeOut ( unsigned char time, unsigned char min )
+{
+	COMMTIMEOUTS cto;
+	if ( ( time == 0 ) && ( min == 0 ) )
+	{
+		cto.ReadIntervalTimeout = 0;
+		cto.ReadTotalTimeoutMultiplier = MAXDWORD;
+	}
+	else
+	{
+	    cto.ReadIntervalTimeout = time * 100;
+	    cto.ReadTotalTimeoutMultiplier = 0;
+	}
+    cto.ReadTotalTimeoutConstant = time * 100;
+    cto.WriteTotalTimeoutMultiplier = 0;
+    cto.WriteTotalTimeoutConstant = 0;
+
+    return ( SetCommTimeouts ( GetStdHandle ( STD_INPUT_HANDLE ), &cto ) == 0 );
 }
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 int getTermStatus ( void ** const outPtr )
 { // not avaliable for windows
 	return ( 1 );
@@ -331,6 +347,7 @@ int resetBlockMode ( const void * const ptr )
 { // not avaliable for windows
 	return ( __LINE__ );
 }
+#pragma GCC diagnostic pop
 
 void setPosition ( int row, int col )
 {
@@ -415,7 +432,6 @@ void clear ( )
 	system ( "cls" );
 }
 
-#pragma GCC diagnostic pop
 #endif
 
 int menu ( int argc, ... )
