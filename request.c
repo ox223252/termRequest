@@ -115,7 +115,7 @@ int getPassword ( char * const password, const unsigned int size, const char byt
 
 #if defined( __linux__ ) || defined( __APPLE__ )
 
-void setGetCharTimeOut ( unsigned char time, unsigned char min )
+int setGetCharTimeOut ( unsigned char time, unsigned char min )
 {
 	static struct termios mask;
 
@@ -124,7 +124,7 @@ void setGetCharTimeOut ( unsigned char time, unsigned char min )
 	mask.c_cc[ VMIN ] = min;
 	mask.c_cc[VTIME] = time;
 
-	tcsetattr( STDIN_FILENO, TCSANOW, &mask );
+	return ( tcsetattr( STDIN_FILENO, TCSANOW, &mask ) );
 }
 
 int getTermStatus ( void ** const outPtr )
