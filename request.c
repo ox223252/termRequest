@@ -1,4 +1,3 @@
-
 ////////////////////////////////////////////////////////////////////////////////
 /// \copiright ox223252, 2017
 ///
@@ -205,12 +204,7 @@ void setPosition ( int row, int col )
 void getPosition ( int * const restrict row, int * const restrict col )
 {
 	struct winsize w;
-
-	if ( ( row < 0 ) ||
-		( col < 0 ) )
-	{
-		ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-	}
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 
 	if ( row )
 	{
@@ -221,8 +215,6 @@ void getPosition ( int * const restrict row, int * const restrict col )
 	{
 		*col = w.ws_col;
 	}
-
-	printf ( "x/y : %d %d\n", w.ws_row, w.ws_col );
 }
 
 void getSize ( int *row, int *col )
@@ -275,7 +267,7 @@ int _getche ( void )
 int _kbhit ( void )
 {
 	struct termios oldMask, newMask;
-	char c = 0;
+	short c = 0;
 	int mask = 0;
 
 	tcgetattr ( STDIN_FILENO, &oldMask );
@@ -436,9 +428,6 @@ void clear ( )
 
 int menu ( int argc, ... )
 {
-	#ifdef __linux__
-	void *mask = NULL;
-	#endif
 	va_list list;
 	char **table  = NULL;
 
