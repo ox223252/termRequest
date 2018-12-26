@@ -68,7 +68,7 @@ int getPassword ( char * const password, const unsigned int size,
 ///     be read. 
 /// \bug i'm not sure this function fully works on Windows
 ////////////////////////////////////////////////////////////////////////////////
- int setGetCharTimeOut ( unsigned char time, unsigned char min );
+int setGetCharTimeOut ( unsigned char time, unsigned char min );
  
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn int getTermSatatus ( void ** const outPtr );
@@ -192,11 +192,12 @@ typedef enum
 KEY_CODE;
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fnint getMovePad ( const bool blockMode )
-/// \param [ in ] blockMode : flag to determine if function should pass to block
-///     mode itself
-/// \brief this function while return a key for azerty key board
+/// \fnint getMovePad ( const bool nonBlocking )
+/// \param [ in ] blockMode : flag to determine if function should pass to non 
+///     blocking mode
+/// \brief this function return a key for azerty, qwerty key board for teh std
+///     move keys zqsd/wasd/arrow
 ////////////////////////////////////////////////////////////////////////////////
-KEY_CODE getMovePad ( const bool blockMode );
+KEY_CODE getMovePad ( const bool nonBlocking );
 
 #endif

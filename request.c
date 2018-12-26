@@ -48,6 +48,7 @@
 #if defined( __linux__ ) || defined( __APPLE__ )
 static const char _request_enter = '\n';
 static const char _request_backSpace = 0x7f;
+static const char _request_composeCode = 0x1b; // MSB for arrow UP/DOWN/...
 #define _request_up 0x41
 #define _request_down 0x42
 #define _request_left 0x44
@@ -55,6 +56,7 @@ static const char _request_backSpace = 0x7f;
 #else
 static const char _request_enter = '\r';
 static const char _request_backSpace = 0x08;
+static const unsigned char _request_composeCode = 0xe0;
 #define _request_up 0x48
 #define _request_down 0x50
 #define _request_left 0x4b
@@ -564,23 +566,45 @@ int menu ( int argc, ... )
 	return ( choix );
 }
 
-KEY_CODE getMovePad ( const bool blockMode )
+KEY_CODE getMovePad ( const bool nonBlocking )
 {
 	unsigned short data = 0;
 
-	if ( blockMode )
+	if ( nonBlocking )
 	{
-		data = _getch ( );
+		if ( _kbhit ( ) )
+		{
+			data = _getch ( );
+		}
 	}
 	else
 	{
-		data = getchar ( );
+		data = _getch ( );
 	}
 
-	if ( ( data == 0 ) ||
-		( data == 0xe0 ) )
+	if ( data == _request_composeCode )
 	{
+		#if defined( __linux__ ) || defined( __APPLE__ )
+
+		if ( _kbhit ( ) )
+		{
+			data = _getch ( );
+		}
+
+		// second compose code 
+		if ( data == 0x5b )
+		{
+			if ( _kbhit ( ) )
+			{
+				data = _getch ( );
+			}
+		}
+
+		#else
+
 		data = _getch ( );
+		
+		#endif
 	}
 
 	switch ( data )
