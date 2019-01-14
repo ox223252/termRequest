@@ -37,14 +37,6 @@
 
 #include "request.h"
 
-#ifdef __linux__
-#define COLOR_NONE "\e[0m"
-#else
-#define COLOR_NONE
-#endif
-
-#include "request.h"
-
 #if defined( __linux__ ) || defined( __APPLE__ )
 static const char _request_enter = '\n';
 static const char _request_backSpace = 0x7f;
@@ -441,12 +433,17 @@ int menu ( int argc, ... )
 	char letterSelect[32] = ">";
 	char letterNoSelect[32] = " ";
 
+	#if defined ( _WIN64 ) || defined ( _WIN32 )
+		long unsigned int WcmdStatus;
+	#endif
+
 	struct 
 	{
 		int x;
 		int y;
 	}
 	position = { 0 };
+
 
 	va_start ( list, argc );
 
@@ -468,6 +465,11 @@ int menu ( int argc, ... )
 		table = va_arg ( list, char** );
 	}
 	ptr = va_arg ( list, char * );
+
+	#if defined ( _WIN64 ) || defined ( _WIN32 )
+		GetConsoleMode ( GetStdHandle ( STD_OUTPUT_HANDLE ), &WcmdStatus );
+		SetConsoleMode ( GetStdHandle ( STD_OUTPUT_HANDLE ), WcmdStatus | 0x0004 );
+	#endif
 
 	if ( ptr )
 	{
@@ -508,7 +510,7 @@ int menu ( int argc, ... )
 				setPosition ( position.x + i, position.y );
 			}
 
-			printf ( " %s %s "COLOR_NONE"\n", ( selecteur == i )? letterSelect : letterNoSelect, table[ i ] );
+			printf ( " %s %s \e[0m\n", ( selecteur == i )? letterSelect : letterNoSelect, table[ i ] );
 
 			i++;
 		}
@@ -541,20 +543,10 @@ int menu ( int argc, ... )
 			}
 		}
 
-		#ifdef __linux__
-			if ( choix < 0 )
-			{
-				printf ( "\e[%dA", nbEelemtns );
-			}
-		#else
-			int row;
-			getPosition ( &row, NULL );
-
-			if ( choix < 0 )
-			{
-				setPosition ( row - nbEelemtns + 1, 1 );
-			}
-		#endif
+		if ( choix < 0 )
+		{
+			printf ( "\e[%dA", nbEelemtns );
+		}
 	}
 	while ( choix < 0 );
 
@@ -562,6 +554,10 @@ int menu ( int argc, ... )
 	{
 		free ( table );
 	}
+	
+	#if defined ( _WIN64 ) || defined ( _WIN32 )
+		SetConsoleMode ( GetStdHandle ( STD_OUTPUT_HANDLE ), WcmdStatus );
+	#endif
 
 	return ( choix );
 }
