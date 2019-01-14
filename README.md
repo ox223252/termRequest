@@ -1,6 +1,6 @@
 # termRequest
 
-work for Windows and Linux and probably mac but never tested on it
+Work for Windows and Linux and probably mac but never tested on it.
 
 full example to use this lib:
 ```C
@@ -9,7 +9,6 @@ full example to use this lib:
 #include <string.h>
 
 #include "termRequest/request.h"
-#define ESC "\x1b"
 
 int main ( void )
 {
