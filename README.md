@@ -111,7 +111,7 @@ int _getch ( void );
 int _getche ( void );
 ```
 
- - get char without and no need to press enter 
+ - get char with echoing and no need to press enter 
 
 ```C
 int _kbhit ( void );
