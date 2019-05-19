@@ -9,6 +9,7 @@ full example to use this lib:
 #include <string.h>
 
 #include "termRequest/request.h"
+#include "termRequest/menu.h"
 
 int main ( void )
 {
@@ -18,15 +19,6 @@ int main ( void )
 	};
 	void * ptr = NULL;
 	char c;
-
-	// password use exemple
-	printf ( "password : " );
-	getPassword ( password, 32, '*' );
-	printf ( "typed : %s : %ld\n", password, strlen ( password ) );
-
-	printf ( "password : " );
-	getPassword ( password, 32, 0 );
-	printf ( "typed : %s : %ld\n", password, strlen ( password ) );
 
 	// set postion example
 	setPosition ( 1, 1 );
@@ -52,6 +44,17 @@ int main ( void )
 	printf ( "\npress enter to continue\n" );
 	getchar ( );
 
+
+	// password use exemple
+	printf ( "password : " );
+	getPassword ( password, 32, '*' );
+	printf ( "typed : %s : %ld\n", password, strlen ( password ) );
+
+	printf ( "password : " );
+	getPassword ( password, 32, 0 );
+	printf ( "typed : %s : %ld\n", password, strlen ( password ) );
+
+
 	// menu usage example
 	printf ( "demo for menu\n" );
 	// default  menu
@@ -75,19 +78,25 @@ int main ( void )
 	// larger selector
 	menu ( 3, "A--", "B--", "C--", "--", " " );
 
+	// liste will be created by malloc in menuSelect function
+	int * liste = NULL;
+	liste = menuSelect ( 0, table, NULL );
+	free ( liste );
+
+	// if list is provided to menuSelect function,
+	// menu will select by default elements
+	liste = malloc ( sizeof ( int ) * 2 );
+	liste[ 0 ] = 1;
+	liste[ 1 ] = -1; // the last element of the list should be null
+	liste = menuSelect ( 0, table, 10, 10, liste, NULL );
+	free ( liste );
+
+
 	return  ( 0 );
 }
 ```
 
 ### functions:
-```C
-int getPassword ( char * const password, const unsigned int size, const char byte );
-```
-
- - **password**: pointer on string to store password
- - **size**: max size of password, with last '\0'
- - **byte**: byte that replace the default print
-
 ```C
 void setPosition ( int x, int y );
 ```
@@ -131,6 +140,14 @@ void clear ( void );
 
 ### menu:
 ```C
+int getPassword ( char * const password, const unsigned int size, const char byte );
+```
+
+ - **password**: pointer on string to store password
+ - **size**: max size of password, with last '\0'
+ - **byte**: byte that replace the default print
+
+```C
 int menu ( int argc, ... );
 ```
  
@@ -154,10 +171,29 @@ int menu ( int argc, ... );
 the last element should be NULL, if argc is zero, then the last element of table should be NULL too.
 
 ```C
+int * menuSelect ( int argc, ... );
+```
+
+ - **argc**: number of elements in menu [ N ]
+ - **variadic**:
+   - if argc > 0
+     - **char [ ]**: menuElement [ 0 ]
+     - **char [ ]**: menuElement [ ... ]
+     - **char [ ]**: menuElement [ N-1 ]
+     - **int**: x position
+     - **int**: y position
+     - **int\***: liste pointer on the preselected elements in menu, declared as pointer initialized by malloc and last element should be set as **-1**
+   - else
+     - **\*char [ N ]**: menu table
+     - **int**: x position
+     - **int**: y position
+     - **int\***: liste pointer on the preselected elements in menu, declared as pointer initialized by malloc and last element should be set as **-1**
+
+```C
 KEY_CODE getMovePad ( const bool nonBlocking );
 ```
 
- - **nonBlocking**: if flag set to __false__ ( 0 ), then this functionwill wait a keybord hit before returning something, if flag set to __true__ ( 1 ), then this function will try to get a keycode, but if no key pressed then it will return mediatly __KEYCODE_NONE__.
+ - **nonBlocking**: if flag set to __false__ ( 0 ), then this function will wait a keybord hit before returning something, if flag set to __true__ ( 1 ), then this function will try to get a keycode, but if no key pressed then it will return mediatly __KEYCODE_NONE__.
 
 ### Only for linux:
 ```C

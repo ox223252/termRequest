@@ -23,25 +23,10 @@
 /// \author ox223252
 /// \date 2018-07
 /// \copyright GPLv2
-/// \version 1.0
+/// \version 1.1
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <stdbool.h>
-
-////////////////////////////////////////////////////////////////////////////////
-/// \fn int getPassword ( char * const password, const unsigned int size, 
-///     const char byte );
-/// \param [ in ] password : array for password output
-/// \param [ in ] size : array size
-/// \param [ in ] byte : byte to replace typed one could be set to 0 to hide 
-///     everything
-/// \brief request  to a password hide typed text and replace each letter by 
-///     byte if it was not zero
-/// \return if 0 the OK else see errno for more details
-////////////////////////////////////////////////////////////////////////////////
-int getPassword ( char * const password, const unsigned int size, 
-	const char byte );
-
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn int setGetCharTimeOut ( unsigned char time, unsigned char min );
@@ -154,50 +139,5 @@ int _kbhit ( void );
 /// \breif clean screen
 ////////////////////////////////////////////////////////////////////////////////
 void clear ( void );
-
-////////////////////////////////////////////////////////////////////////////////
-/// \fn int menu ( int argc, ... );
-/// \param [ in ] argc : number of menu element
-/// \param [ in ] variadic :
-///     if argc > 0
-///         char* menu elements
-///         char* menu elements
-///         char* ...
-///     else
-///         char *tab[];
-///     char* on selector string ( length < 32 )
-///     char* on unselector string ( length < 32 )
-///     int x position (verticale)
-///     int y position (horizonale)
-///     NULL
-/// \brief set a menu
-/// \details if argc is upper than 0, then you should pass a list of elements,
-///     if argc is less or equal to 0 then you should pass as first variadic
-///     element a table of string terminated by NULL. The variadic list should
-///     be endded by NULL.
-/// \return -1 in error case, else return element choice selected
-////////////////////////////////////////////////////////////////////////////////
-int menu ( int argc, ... );
-
-typedef enum
-{
-	KEYCODE_ESCAPE,
-	KEYCODE_UP,
-	KEYCODE_LEFT,
-	KEYCODE_DOWN,
-	KEYCODE_RIGHT,
-	KEYCODE_SPACE,
-	KEYCODE_NONE
-}
-KEY_CODE;
-
-////////////////////////////////////////////////////////////////////////////////
-/// \fnint getMovePad ( const bool nonBlocking )
-/// \param [ in ] blockMode : flag to determine if function should pass to non 
-///     blocking mode
-/// \brief this function return a key for azerty, qwerty key board for teh std
-///     move keys zqsd/wasd/arrow
-////////////////////////////////////////////////////////////////////////////////
-KEY_CODE getMovePad ( const bool nonBlocking );
 
 #endif
