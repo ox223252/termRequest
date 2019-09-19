@@ -53,7 +53,7 @@ static bool inculeIn ( int * array, size_t size, int value )
 
 	if ( size )
 	{
-		for ( int i = 0; i < size; i++ )
+		for ( size_t i = 0; i < size; i++ )
 		{
 			if ( array[ i ] == value )
 			{
