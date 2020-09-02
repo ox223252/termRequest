@@ -26,23 +26,23 @@
 #include "menuConfig.h"
 
 #if defined( __linux__ ) || defined( __APPLE__ )
-static const char _request_enter = '\n';
-static const char _request_backSpace = 0x7f;
-static const char _request_composeCode = 0x1b; // MSB for arrow UP/DOWN/...
-#define _request_up 0x41
-#define _request_down 0x42
-#define _request_left 0x44
-#define _request_right 0x43
+	#define _request_enter '\n'
+	#define _request_backSpace 0x7f
+	#define _request_composeCode 0x1b // MSB for arrow UP/DOWN/...
+	#define _request_up 0x41
+	#define _request_down 0x42
+	#define _request_left 0x44
+	#define _request_right 0x43
 #elif defined( _WIN32 ) || defined( _WIN64 )
-static const char _request_enter = '\r';
-static const char _request_backSpace = 0x08;
-static const unsigned char _request_composeCode = 0xe0;
-#define _request_up 0x48
-#define _request_down 0x50
-#define _request_left 0x4b
-#define _request_right 0x4d
+	#define _request_enter '\r'
+	#define _request_backSpace 0x08
+	#define _request_composeCode 0xe0
+	#define _request_up 0x48
+	#define _request_down 0x50
+	#define _request_left 0x4b
+	#define _request_right 0x4d
 #else
-#error
+	#error
 #endif
 
 static bool includeIn ( int * array, size_t size, int value )
