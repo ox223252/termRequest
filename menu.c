@@ -23,6 +23,7 @@
 
 #include "request.h"
 #include "menu.h"
+#include "menuConfig.h"
 
 #if defined( __linux__ ) || defined( __APPLE__ )
 static const char _request_enter = '\n';
@@ -44,7 +45,7 @@ static const unsigned char _request_composeCode = 0xe0;
 #error
 #endif
 
-static bool inculeIn ( int * array, size_t size, int value )
+static bool includeIn ( int * array, size_t size, int value )
 {
 	if ( !array )
 	{
@@ -81,7 +82,7 @@ static int toogleEntry ( int ** array, int *size, int value )
 		return ( __LINE__ );
 	}
 
-	if ( !inculeIn ( *array, (*size), value ) )
+	if ( !includeIn ( *array, (*size), value ) )
 	{
 		void * tmp = realloc ( *array, sizeof ( int ) * ( (*size) + 2 ) );
 		if ( tmp == NULL )
@@ -135,11 +136,11 @@ static int printTable ( int argc, char ** table, int * id, void * selector, void
 		}
 		else if ( i == *(int*)selector )
 		{
-			printf ( " \e[1m[%c]\e[0m %s\e[0m\n", (inculeIn ( id, 0, i ))? '*' : ' ', table[ i ] );
+			printf ( " \e[1m[%c]\e[0m %s\e[0m\n", (includeIn ( id, 0, i ))? '*' : ' ', table[ i ] );
 		}
 		else
 		{
-			printf ( " [%c] %s\e[0m\n", (inculeIn ( id, 0, i ))? '*' : ' ', table[ i ] );
+			printf ( " [%c] %s\e[0m\n", (includeIn ( id, 0, i ))? '*' : ' ', table[ i ] );
 		}
 
 		i++;
