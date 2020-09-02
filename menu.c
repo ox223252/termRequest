@@ -45,6 +45,58 @@
 	#error
 #endif
 
+// add indentation for full config display
+static void printIndentation ( int lvl )
+{
+	while ( ( lvl > 0 ) && lvl-- )
+	{
+		printf ( "\t" );
+	}
+}
+
+// if lvl == -1 display one element, else display all elements
+static void menuConfigPrint ( menuConfigEl * m, int lvl )
+{
+	do
+	{
+		if ( lvl != -1 )
+		{
+			printIndentation ( lvl );
+		}
+
+		if ( m->type == vT(menu) )
+		{
+			menuParam *p = m->param;
+			printf ( "%s :\n", p->title );
+
+			if ( lvl != -1 )
+			{
+				menuConfigPrint ( m->data, lvl + 1 );
+			}
+		}
+		else
+		{
+			printEl ( m );
+		}
+		m++;
+	}
+	while ( ( m->type != vT(notUsed) ) &&
+		( lvl >= 0 ) );
+}
+
+// what should we do when we select an element of the config
+static bool menuConfigSelect ( menuConfigEl * const m )
+{
+	if ( m->type  == vT(menu) )
+	{
+		return menuConfig ( (menuConfigEl*)m->data );
+	}
+	else
+	{
+		return selectEl ( m );
+	}
+}
+
 static bool includeIn ( int * array, size_t size, int value )
 {
 	if ( !array )
@@ -537,4 +589,105 @@ int * menuSelect ( int argc, ... )
 	#endif
 
 	return ( selected );
+}
+
+bool menuConfig ( menuConfigEl * const m )
+{
+	bool modified = false;
+
+	uint32_t entryNumber = 0;
+	uint32_t selector = 0;
+
+	while ( m[ entryNumber ].type != vT(notUsed) )
+	{
+		entryNumber++;
+	}
+
+	while ( 1 )
+	{
+		for ( uint32_t index = 0; m[ index ].type != vT(notUsed); index++ )
+		{
+			if ( index == selector )
+			{
+				printf ( "-> " );
+			}
+			else
+			{
+				printf ( "   " );
+			}
+
+			menuConfigPrint ( m + index, -1 );
+		}
+
+		if ( selector == entryNumber )
+		{
+			printf ( "-> back\n" );
+		}
+		else
+		{
+			printf("   back\n");
+		}
+
+		char c = 0;
+		do
+		{ // get key
+			c = _getch ( );
+		}
+		while ( ( c != _request_up ) && 
+			( c != _request_down ) &&
+			( c != _request_enter ) );
+
+		for ( uint32_t i = 0; i <= entryNumber; i++ )
+		{
+			printf ( "\e[A\e[2K\r" );
+		}
+
+		switch ( c )
+		{
+			case 'q':
+			case 'Q':
+			{
+				return modified;
+			}
+			case _request_up:
+			{
+				selector += entryNumber;
+				break;
+			}
+			case _request_down:
+			{
+				selector++;
+				break;
+			}
+			case _request_enter:
+			{
+				if ( selector == entryNumber )
+				{
+					return modified;
+				}
+			
+				modified |= menuConfigSelect ( m + selector );
+				break;
+			}
+			case _request_backSpace:
+			{
+				return modified;
+			}
+		}
+
+		selector %= ( entryNumber + 1 );
+	}
+
+	return ( modified );
+}
+
+void printConfig ( menuConfigEl * m )
+{
+	while ( m->type != vT(notUsed) )
+	{
+		printf ( "***\n" );
+		menuConfigPrint ( m, 0 );
+		m++;
+		printf ( "***\n" );
+	}
 }

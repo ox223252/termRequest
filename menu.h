@@ -29,6 +29,8 @@
 
 #include <stdbool.h>
 
+#include "menuConfig.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn int getPassword ( char * const password, const unsigned int size, 
 ///     const char byte );
@@ -89,6 +91,22 @@ int menu ( int argc, ... );
 /// \return NULL in error case, else return a list of checked list
 ////////////////////////////////////////////////////////////////////////////////
 int * menuSelect ( int argc, ... );
+
+////////////////////////////////////////////////////////////////////////////////
+/// \fn bool menuConfig ( menuConfigEl * const m );
+/// \param [ in ] m : menu element
+/// \biref display a menu where you can select object to modify then if it's 
+///     autorized
+/// \return true if something modified flase if not
+////////////////////////////////////////////////////////////////////////////////
+bool menuConfig ( menuConfigEl * const m );
+
+////////////////////////////////////////////////////////////////////////////////
+/// \fn bool printConfig ( menuConfigEl * m );
+/// \param [ in ] m : menu element
+/// \biref display the full menu with all sub menu
+////////////////////////////////////////////////////////////////////////////////
+void printConfig ( menuConfigEl * m );
 
 typedef enum
 {
