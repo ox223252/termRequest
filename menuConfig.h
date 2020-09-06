@@ -1,14 +1,50 @@
 #ifndef __MENUCONFIG_H__
 #define __MENUCONFIG_H__
 
+////////////////////////////////////////////////////////////////////////////////
+/// \copiright ox223252, 2020
+///
+/// This program is free software: you can redistribute it and/or modify it
+///     under the terms of the GNU General Public License published by the Free
+///     Software Foundation, either version 2 of the License, or (at your
+///     option) any later version.
+///
+/// This program is distributed in the hope that it will be useful, but WITHOUT
+///     ANY WARRANTY; without even the implied of MERCHANTABILITY or FITNESS FOR
+///     A PARTICULAR PURPOSE. See the GNU General Public License for more
+///     details.
+///
+/// You should have received a copy of the GNU General Public License along with
+///     this program. If not, see <http://www.gnu.org/licenses/>
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+/// \file request.h
+/// \brief lib to manage functions related to termnial i/o higger level than 
+///     request.h
+///
+/// This file is specifically dedicated to selectEl() and printEl() functions.
+///     Theses two functions defined as "weak" could be redefined to change the 
+///     default action for predefined elements
+///
+/// \author ox223252
+/// \date 2020-09
+/// \copyright GPLv2
+/// \version 1.0
+////////////////////////////////////////////////////////////////////////////////
+
 #include <stdint.h>
 #include <stdbool.h>
 
 #define vT(x) vatType_##x
 
+////////////////////////////////////////////////////////////////////////////////
+/// \typedef vatType
+/// \brief predefined elements who has default comportement
+////////////////////////////////////////////////////////////////////////////////
 typedef enum
 {
-	vT(notUsed),
+	vT(notUsed), ///< for the last input of a menu
 	vT(uint8_t),
 	vT(uint16_t),
 	vT(uint32_t),
@@ -26,26 +62,40 @@ typedef enum
 }
 vatType;
 
+////////////////////////////////////////////////////////////////////////////////
+/// \typedef defaultParam
+/// \biref param for vT(uint8_t) - vT(double) elements
+////////////////////////////////////////////////////////////////////////////////
 typedef struct
 {
-	vatType type;
-	void* data;
-	void* param;
-}
-menuConfigEl;
-
-typedef struct
-{
-	bool editable;
-	char title[25];
+	bool editable; ///< spécify if you can edit the var or not
+	char title[25]; ///< label usedidentify the var
 }
 defaultParam;
 
+////////////////////////////////////////////////////////////////////////////////
+/// \typedef menuParam
+/// \biref param for vt(menu) elements
+////////////////////////////////////////////////////////////////////////////////
 typedef struct
 {
-	char title[25];
+	char title[25]; ///< label usedidentify the var
 }
 menuParam;
+
+////////////////////////////////////////////////////////////////////////////////
+/// \typedef menuConfigEl
+/// \biref element used to define a menu to configure elements
+////////////////////////////////////////////////////////////////////////////////
+typedef struct
+{
+	vatType type; ///< \see vatType
+	void* data; ///< pointer on the data
+	void* param; ///< parameter for the data define by the previous pointer
+	    ///< \see menuParam for vT(menu)
+	    ///< \see defaultParam for others elements (by default)
+}
+menuConfigEl;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn bool selectEl ( menuConfigEl * const m );
