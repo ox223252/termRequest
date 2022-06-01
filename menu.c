@@ -34,6 +34,7 @@
 	#define _request_left 0x44
 	#define _request_right 0x43
 #elif defined( _WIN32 ) || defined( _WIN64 )
+	#include "windows.h"
 	#define _request_enter '\r'
 	#define _request_backSpace 0x08
 	#define _request_composeCode 0xe0
